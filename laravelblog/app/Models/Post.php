@@ -10,7 +10,8 @@ class Post extends Model
   use HasFactory;
 
   protected $fillable = [
-    'name', 'phone', 'email', 'company', 'Email', 'date', 'photo'
+    'name', 'phone', 'email', 'company', 'Email', 'date'
+    // , 'photo'
   ];
   public $timestamps = false;
 }

@@ -16,11 +16,11 @@ return new class extends Migration
         Schema::create('posts', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('company');
+            $table->string('company')->nullable(true);
             $table->string('phone');
             $table->string('email');
-            $table->date('date');
-            $table->string('photo');
+            $table->date('date')->nullable(true);
+            $table->string('photo')->nullable(true);
             // $table->timestamps();
         });
     }

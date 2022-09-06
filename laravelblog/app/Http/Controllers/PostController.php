@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Storage;
 use App\Models\Post;
 use Illuminate\Http\Request;
 
@@ -36,28 +37,29 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        $validatedData = $request->validate([
+        $request->validate([
             'name' => 'required',
             'phone' => 'required',
             'email' => 'required',
             'company' => 'nullable',
             'date' => 'nullable',
-            'photo' => 'nullable'
+            'photo' => 'nullable',
         ]);
-        if (!empty($request['photo'])) {
-            $post = new Post();
-            $post->name = $request->input('name');
-            $post->company = $request->input('company');
-            $post->phone = $request->input('phone');
-            $post->email = $request->input('email');
-            $post->date = $request->input('date');
-            $path = $request->file('photo')->store('photos', 'public');
-            $post->photo = $path;
-            $post->save();
-        } else {
-            Post::create($validatedData);
-        }
+    
+        $post = new Post();
+        $post->name = $request-> input('name');
+        $post->company = $request-> input('company');
+        $post->phone = $request-> input('phone');
+        $post->email = $request-> input('email');
+        $post->date = $request-> input('date');
+    
+        if($request->hasFile('photo')) {
+            $post->photo = $request->file('photo')->store('photos', ['disk'=>'public']);
 
+        } 
+    $post->save();
+    
+        
         return redirect()->route('posts.index')->with('success', 'Post created successfully.');
     }
 
@@ -92,7 +94,7 @@ class PostController extends Controller
      */
     public function update(Request $request, Post $post)
     {
-        $validatedData =  $request->validate([
+          $request->validate([
             'name' => 'required',
             'phone' => 'required',
             'email' => 'required',
@@ -101,17 +103,18 @@ class PostController extends Controller
             'photo' => 'nullable'
         ]);
 
-        if (!empty($request['photo'])) {
-            $post->update($validatedData);
-            $post->date = $request->input('date');
-            $path = $request->file('photo')->store('photos', 'public');
-            $post->photo = $path;
-            $post->save();
-        } else {
-            $post->update($validatedData);
+        // dd($validatedData);
+        if($request->hasFile('photo')) {
+            $request->file('photo')->storeAs('photos', basename($post->photo), ['disk'=>'public']);
         }
+        $post->update($request->all());
+        
         return redirect()->route('posts.index')->with('success', 'Post updated successfully');
     }
+
+   
+
+    
     /**
      * Удаляет указанный ресурс из хранилища
      *
@@ -120,9 +123,20 @@ class PostController extends Controller
      */
     public function destroy(Post $post)
     {
+        // dd($post);
         $post->delete();
-
+        if ($post->delete() === true){
+            if(Storage::disk('public')->exists($post->photo)=== true){ 
+                Storage::disk('public')->delete('photos', ['disk'=>'public']); //Скорее всего ошибка
+                // $post->file('photo')->delete('photos', ['disk'=>'public']);
+        //    dd();
+            }
         return redirect()->route('posts.index')
             ->with('success', 'post deleted successfully');
+        } else {
+        return redirect()->route('posts.index')
+            ->with('error', 'post is not deleted');
+        }
+
     }
 }
