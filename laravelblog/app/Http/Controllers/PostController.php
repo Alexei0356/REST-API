@@ -128,8 +128,6 @@ class PostController extends Controller
         if ($post->delete() === true){
             if(Storage::disk('public')->exists($post->photo)=== true){ 
                 Storage::disk('public')->delete('photos', ['disk'=>'public']); //Скорее всего ошибка
-                // $post->file('photo')->delete('photos', ['disk'=>'public']);
-        //    dd();
             }
         return redirect()->route('posts.index')
             ->with('success', 'post deleted successfully');
